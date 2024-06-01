@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Generate MCQs</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+    <h1 class="mt-4 text-center">Generated MCQs</h1>
+    <div class="container" id="mcqs-container">
+      {% for index, mcq in mcqs %}
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Q{{index}}: {{mcq[0]}}?</h5>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </body>
+</html>
