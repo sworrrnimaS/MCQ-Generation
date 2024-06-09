@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template 
 from flask_bootstrap import Bootstrap
 from PyPDF2 import PdfReader, PdfWriter
+import pdfplumber
 import spacy
 from collections import Counter
 import random
@@ -91,17 +92,11 @@ def generate_mcqs(text, num_questions=5):
     all_nouns = [token.text for token in doc if token.pos_ == "NOUN"]
     unique_nouns = list(set(all_nouns))
 
-    # Ensure that the number of questions does not exceed the number of sentences
-    num_questions = min(num_questions, len(sentences))
-
-    # Randomly select sentences to form questions
-    selected_sentences = random.sample(sentences, num_questions)
-
     # Initialize list to store generated MCQs
     mcqs = []
 
-    # Generate MCQs for each selected sentence
-    for sentence in selected_sentences:
+    # Generate MCQs for each sentence until the requested number of questions is reached
+    for sentence in sentences:
         # Process the sentence with spaCy
         sent_doc = nlp(sentence)
 
@@ -147,16 +142,29 @@ def generate_mcqs(text, num_questions=5):
             correct_answer = chr(64 + answer_choices.index(subject) + 1)  # Convert index to letter
             mcqs.append((question_stem, answer_choices, correct_answer))
 
+        # Break the loop if the requested number of questions is reached
+        if len(mcqs) >= num_questions:
+            break
+
     return mcqs
 
-def process_pdf(file):
-  text = ""
-  pdf_reader = PdfReader(file) 
 
-  for page_num in range(len(pdf_reader.pages)):
-    page_text = pdf_reader.pages[page_num].extract_text()
-    text += page_text
-  return text 
+# def process_pdf(file):
+#   text = ""
+#   pdf_reader = PdfReader(file) 
+
+#   for page_num in range(len(pdf_reader.pages)):
+#     page_text = pdf_reader.pages[page_num].extract_text()
+#     text += page_text
+#   return text 
+
+
+def process_pdf(file):
+    text = ""
+    with pdfplumber.open(file) as pdf:
+        for page in pdf.pages:
+            text += page.extract_text()
+    return text
 
 @app.route("/", methods=["GET", "POST"])
 def index():
